@@ -75,9 +75,9 @@ const Status = {
         const d = document.getElementById('st-drv');
         const a = document.getElementById('st-att');
         d.className = 'dot ' + (this.drv ? 'good' : 'bad');
-        d.textContent = this.drv ? '● driver' : '○ driver';
+        d.textContent = this.drv ? 'driver' : 'driver';
         a.className = 'dot ' + (this.att ? 'good' : 'bad');
-        a.textContent = this.att ? '● attached ' + this.pid : '○ not attached';
+        a.textContent = this.att ? 'attached ' + this.pid : 'not attached';
 
         const info = document.getElementById('s-drvinfo');
         if (info) {

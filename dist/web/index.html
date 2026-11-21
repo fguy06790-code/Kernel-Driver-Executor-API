@@ -4,19 +4,28 @@
 <meta charset="utf-8">
 <title>krnlexec</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header id="bar">
-    <div class="brand"><span class="chev">&gt;_</span><span>krnlexec</span></div>
+    <div class="brand">
+        <span class="mark">&gt;_</span>
+        <span class="name">krnlexec</span>
+        <span class="kind">EXECUTOR</span>
+        <span class="ver">v2.4.0</span>
+    </div>
     <nav class="tabs">
         <button data-view="editor" class="active">Editor</button>
         <button data-view="hub">Script Hub</button>
         <button data-view="settings">Settings</button>
     </nav>
     <div class="status">
-        <span id="st-drv" class="dot bad" title="driver">● driver</span>
-        <span id="st-att" class="dot bad" title="attach">● attach</span>
+        <span class="ctx">Roblox workspace</span>
+        <span id="st-drv" class="dot bad" title="driver">driver</span>
+        <span id="st-att" class="dot bad" title="attach">attach</span>
         <button id="btn-attach" title="Attach to Roblox">Attach</button>
         <button id="btn-release" class="ghost">Release</button>
     </div>
@@ -27,21 +36,41 @@
         <aside id="sidebar">
             <div class="s-head">
                 <span>WORKSPACE</span>
-                <button id="btn-rescan" class="icon" title="Rescan">&#x21BB;</button>
+                <button id="btn-rescan" class="icon" title="Rescan">+</button>
             </div>
             <ul id="file-list"></ul>
         </aside>
         <section id="editor-pane">
-            <div class="toolbar">
-                <div id="tabs-bar"></div>
-                <div class="spacer"></div>
-                <button id="btn-exec" class="primary">&#9654; Execute <kbd>F5</kbd></button>
-                <button id="btn-save">Save <kbd>Ctrl+S</kbd></button>
-                <button id="btn-new" class="ghost">+ New</button>
+            <div class="pane-head">
+                <div>
+                    <h1>Script editor</h1>
+                    <p class="sub">A clean space for your next idea.</p>
+                </div>
+                <div class="badge">LOCAL WORKSPACE</div>
             </div>
-            <div id="monaco"></div>
-            <div id="output">
-                <div class="s-head"><span>OUTPUT</span>
+
+            <div class="panel">
+                <div class="toolbar">
+                    <div id="tabs-bar"></div>
+                    <button id="btn-new" class="tab-new" title="New tab">+</button>
+                    <div class="spacer"></div>
+                    <span class="hint">Auto-save on</span>
+                </div>
+                <div id="monaco"></div>
+                <div class="exec-row">
+                    <button id="btn-exec">Execute</button>
+                    <button id="btn-save">Save <kbd>Ctrl+S</kbd></button>
+                    <div class="spacer"></div>
+                    <span class="shortcut">⌘ Enter to execute</span>
+                </div>
+            </div>
+
+            <div id="output" class="panel">
+                <div class="s-head">
+                    <span class="title">Console</span>
+                    <span class="count" id="log-count">0</span>
+                    <span class="label">OUTPUT</span>
+                    <span class="filter">All messages</span>
                     <button id="btn-clear" class="icon" title="Clear">&times;</button>
                 </div>
                 <ol id="log"></ol>
@@ -52,10 +81,10 @@
     <section id="view-hub" class="view">
         <div class="hub-head">
             <input id="hub-search" type="search" placeholder="Search scripts...">
-            <button id="hub-refresh" class="ghost">Refresh</button>
             <select id="hub-source">
                 <option value="builtin">Builtin catalog</option>
             </select>
+            <button id="hub-refresh" class="ghost">Refresh</button>
         </div>
         <div id="hub-grid"></div>
         <div id="hub-empty" class="empty">No scripts match.</div>
@@ -63,6 +92,9 @@
 
     <section id="view-settings" class="view">
         <h2>Settings</h2>
+        <p class="lead">Configure how krnlexec reports, attaches, and renders.</p>
+
+        <h3>Runtime</h3>
         <div class="setting">
             <label>Executor name reported to scripts</label>
             <input id="s-name" type="text" value="krnlexec">
@@ -82,6 +114,8 @@
             <label>Poll driver status (ms)</label>
             <input id="s-pollms" type="number" min="100" step="100" value="500">
         </div>
+
+        <h3>Editor</h3>
         <div class="setting">
             <label>Editor theme</label>
             <select id="s-theme">
@@ -94,6 +128,8 @@
             <label>Monaco font size</label>
             <input id="s-fontsize" type="number" min="8" max="32" value="14">
         </div>
+
+        <h3>Paths</h3>
         <div class="setting">
             <label>Workspace path</label>
             <input id="s-workspace" type="text" readonly>
@@ -103,14 +139,26 @@
             <label>Script Hub JSON catalog URL</label>
             <input id="s-huburl" type="text" placeholder="https://.../catalog.json">
         </div>
+
         <div class="actions">
             <button id="s-save" class="primary">Save settings</button>
             <button id="s-reset" class="ghost">Reset defaults</button>
         </div>
+
         <h3>Driver info</h3>
         <pre id="s-drvinfo">(not attached)</pre>
     </section>
 </main>
+
+<footer id="statusbar">
+    <div class="sb-left"><span id="sb-state">All systems operational</span></div>
+    <div class="sb-right">
+        <span>UTF-8</span>
+        <span class="lang">Luau</span>
+        <span id="sb-pos">Ln 1, Col 1</span>
+        <span>100%</span>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 <script src="app.js"></script>
