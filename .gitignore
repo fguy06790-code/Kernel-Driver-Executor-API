@@ -1,0 +1,14 @@
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.cat
+*.sys.bak
+Debug/
+Release/
+x64/
+.vs/
+*.user
+*.suo
