@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "id": "infinite-yield",
+      "title": "Infinite Yield",
+      "author": "EdgeIY",
+      "tags": ["admin", "utility", "universal"],
+      "description": "Universal admin command suite. Noclip, fly, kill, teleport, etc.",
+      "source": "loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()"
+    },
+    {
+      "id": "dex-explorer",
+      "title": "Dex Explorer",
+      "author": "Moon",
+      "tags": ["explorer", "debug", "universal"],
+      "description": "Moon's rewrite of Dark Dex. Instance tree explorer with property editor.",
+      "source": "loadstring(game:HttpGet('https://raw.githubusercontent.com/peyton2465/Dex/master/out.lua'))()"
+    },
+    {
+      "id": "unc-check",
+      "title": "sUNC Compliance",
+      "author": "sUNC",
+      "tags": ["test", "diagnostic"],
+      "description": "Runs the sUNC test battery. Verifies your executor API surface against the spec.",
+      "source": "loadstring(game:HttpGet('https://raw.githubusercontent.com/scriptings/sunc/main/source.lua'))()"
+    },
+    {
+      "id": "aimbot-template",
+      "title": "Aimbot Template",
+      "author": "template",
+      "tags": ["combat", "template"],
+      "description": "Minimal FOV + closest-player aimbot scaffold. Edit to taste.",
+      "source": "-- Aimbot template\nlocal Players = game:GetService('Players')\nlocal UIS = game:GetService('UserInputService')\nlocal Cam = workspace.CurrentCamera\n\nlocal cfg = { fov = 90, key = Enum.UserInputType.MouseButton2 }\n\nlocal function nearest()\n    local best, bestDist\n    local me = Players.LocalPlayer\n    local mouse = UIS:GetMouseLocation()\n    for _, p in Players:GetPlayers() do\n        if p ~= me and p.Character and p.Character:FindFirstChild('Head') then\n            local pos, onScreen = Cam:WorldToViewportPoint(p.Character.Head.Position)\n            if onScreen then\n                local d = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude\n                if d < cfg.fov and (not bestDist or d < bestDist) then\n                    best, bestDist = p.Character.Head, d\n                end\n            end\n        end\n    end\n    return best\nend\n\ngame:GetService('RunService').RenderStepped:Connect(function()\n    if UIS:IsMouseButtonPressed(cfg.key) then\n        local t = nearest()\n        if t then Cam.CFrame = CFrame.new(Cam.CFrame.Position, t.Position) end\n    end\nend)\n"
+    },
+    {
+      "id": "esp-template",
+      "title": "ESP Template",
+      "author": "template",
+      "tags": ["visuals", "template"],
+      "description": "Billboard-based player ESP: names, healthbar, distance. No internal drawing API needed.",
+      "source": "-- ESP template using BillboardGui (works on any UNC-compliant exec)\nlocal Players = game:GetService('Players')\nlocal esp = {}\n\nlocal function add(plr)\n    if plr == Players.LocalPlayer then return end\n    local function hook(char)\n        local head = char:WaitForChild('Head', 5); if not head then return end\n        local bb = Instance.new('BillboardGui')\n        bb.Size = UDim2.new(0, 120, 0, 40)\n        bb.StudsOffset = Vector3.new(0, 2.5, 0)\n        bb.AlwaysOnTop = true\n        bb.Parent = head\n        local tl = Instance.new('TextLabel', bb)\n        tl.Size = UDim2.new(1, 0, 1, 0)\n        tl.BackgroundTransparency = 1\n        tl.TextColor3 = Color3.fromRGB(240, 240, 240)\n        tl.Font = Enum.Font.Code\n        tl.TextStrokeTransparency = 0.4\n        tl.Text = plr.Name\n        esp[plr] = bb\n    end\n    if plr.Character then hook(plr.Character) end\n    plr.CharacterAdded:Connect(hook)\nend\n\nfor _, p in Players:GetPlayers() do add(p) end\nPlayers.PlayerAdded:Connect(add)\nPlayers.PlayerRemoving:Connect(function(p)\n    if esp[p] then esp[p]:Destroy(); esp[p] = nil end\nend)\n"
+    },
+    {
+      "id": "fps-unlocker",
+      "title": "FPS Counter",
+      "author": "template",
+      "tags": ["utility", "visuals"],
+      "description": "Simple top-right FPS display using RunService.Heartbeat sampling.",
+      "source": "local RS = game:GetService('RunService')\nlocal Players = game:GetService('Players')\nlocal pg = Players.LocalPlayer:WaitForChild('PlayerGui')\n\nlocal gui = Instance.new('ScreenGui', pg)\ngui.Name = 'krnlexec_fps'; gui.ResetOnSpawn = false\nlocal tl = Instance.new('TextLabel', gui)\ntl.Size = UDim2.new(0, 100, 0, 24)\ntl.Position = UDim2.new(1, -110, 0, 10)\ntl.BackgroundTransparency = 0.5\ntl.BackgroundColor3 = Color3.new(0, 0, 0)\ntl.TextColor3 = Color3.fromRGB(240, 240, 240)\ntl.Font = Enum.Font.Code\ntl.Text = '...'\n\nlocal n, acc = 0, 0\nRS.Heartbeat:Connect(function(dt)\n    acc += dt; n += 1\n    if acc >= 0.25 then\n        tl.Text = string.format('%d fps', math.floor(n/acc + 0.5))\n        n, acc = 0, 0\n    end\nend)\n"
+    }
+  ]
+}

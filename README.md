@@ -12,13 +12,19 @@ model for the Windows sandbox.
 
 - `driver.cpp`   — the WDM kernel driver (one file, ~500 LoC).
 - `loader.cpp`   — user-mode CLI (`krnlexec.exe`) that drives the driver via IOCTLs.
-- `gui/`         — Dear ImGui + Win32 + OpenGL3 desktop frontend (`krnlexec-gui.exe`).
+- `gui/`         — WebView2-hosted GUI (`krnlexec-gui.exe`): Monaco editor,
+  script hub, settings panel. Native shell in `gui/host.cpp` + `gui/ipc.cpp`,
+  the UI itself lives under `gui/web/` as HTML/CSS/JS.
+- `vendor/webview2/` — WebView2 SDK headers + `WebView2Loader.dll`.
 - `KrnlExec.inf` — install script.
-- `build.bat`    — Windows build (WDK + MSVC).
+- `build.bat`    — Windows build (WDK + MSVC) — driver + CLI + GUI + dist/.
 - `Makefile`     — cross-build of the CLI + GUI from Linux via mingw-w64.
-- `dist/`        — prebuilt Windows PE32+ binaries:
+- `dist/`        — deployable payload:
     - `krnlexec.exe`      — CLI loader (~2.4 MB).
-    - `krnlexec-gui.exe`  — GUI (~4.5 MB).
+    - `krnlexec-gui.exe`  — GUI (~2.9 MB).
+    - `WebView2Loader.dll`
+    - `web/`              — the HTML/CSS/JS frontend.
+    - `KrnlExec.sys`      — produced only by the Windows build (needs WDK).
 
 ## Build
 
@@ -75,10 +81,25 @@ kdu, or an equivalent loader of your choice.
 
 ### GUI
 
-Run `krnlexec-gui.exe`. Top-right indicator lights show driver + attach
-state. `Driver → Attach (auto)` locates the Roblox window and attaches.
-`▶ Execute` or `F5` dispatches the active tab's script. Workspace lives
-under `%APPDATA%\krnlexec\workspace`.
+Launch `dist\krnlexec-gui.exe`. Three top tabs:
+
+- **Editor** — tabbed Monaco (VS Code's editor) with Luau highlighting,
+  workspace sidebar (`%APPDATA%\krnlexec\workspace`), output console.
+  `F5` executes, `Ctrl+S` saves, `Ctrl+N` new tab. `▶ Execute` button
+  dispatches the active tab via the driver.
+- **Script Hub** — a catalog of scripts with Execute / Open-in-editor
+  buttons. Ships a builtin catalog (`dist\web\catalog.json`); point it
+  at your own URL in Settings → *Script Hub JSON catalog URL*.
+- **Settings** — executor name, default identity, auto-attach, poll
+  interval, Monaco theme + font size, hub URL. Persisted in the
+  WebView's localStorage. Driver info panel at the bottom shows
+  resolved pointers when attached.
+
+Top-right has live status dots: **driver** (service loaded + device
+openable) and **attach** (target PID + resolved offsets).
+
+**WebView2 Runtime** is required. Windows 11 ships it by default; on
+older Windows install the Evergreen runtime from Microsoft.
 
 ### CLI
 

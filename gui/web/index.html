@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>krnlexec</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="bar">
+    <div class="brand"><span class="chev">&gt;_</span><span>krnlexec</span></div>
+    <nav class="tabs">
+        <button data-view="editor" class="active">Editor</button>
+        <button data-view="hub">Script Hub</button>
+        <button data-view="settings">Settings</button>
+    </nav>
+    <div class="status">
+        <span id="st-drv" class="dot bad" title="driver">● driver</span>
+        <span id="st-att" class="dot bad" title="attach">● attach</span>
+        <button id="btn-attach" title="Attach to Roblox">Attach</button>
+        <button id="btn-release" class="ghost">Release</button>
+    </div>
+</header>
+
+<main>
+    <section id="view-editor" class="view visible">
+        <aside id="sidebar">
+            <div class="s-head">
+                <span>WORKSPACE</span>
+                <button id="btn-rescan" class="icon" title="Rescan">&#x21BB;</button>
+            </div>
+            <ul id="file-list"></ul>
+        </aside>
+        <section id="editor-pane">
+            <div class="toolbar">
+                <div id="tabs-bar"></div>
+                <div class="spacer"></div>
+                <button id="btn-exec" class="primary">&#9654; Execute <kbd>F5</kbd></button>
+                <button id="btn-save">Save <kbd>Ctrl+S</kbd></button>
+                <button id="btn-new" class="ghost">+ New</button>
+            </div>
+            <div id="monaco"></div>
+            <div id="output">
+                <div class="s-head"><span>OUTPUT</span>
+                    <button id="btn-clear" class="icon" title="Clear">&times;</button>
+                </div>
+                <ol id="log"></ol>
+            </div>
+        </section>
+    </section>
+
+    <section id="view-hub" class="view">
+        <div class="hub-head">
+            <input id="hub-search" type="search" placeholder="Search scripts...">
+            <button id="hub-refresh" class="ghost">Refresh</button>
+            <select id="hub-source">
+                <option value="builtin">Builtin catalog</option>
+            </select>
+        </div>
+        <div id="hub-grid"></div>
+        <div id="hub-empty" class="empty">No scripts match.</div>
+    </section>
+
+    <section id="view-settings" class="view">
+        <h2>Settings</h2>
+        <div class="setting">
+            <label>Executor name reported to scripts</label>
+            <input id="s-name" type="text" value="krnlexec">
+        </div>
+        <div class="setting">
+            <label>Default execution identity</label>
+            <select id="s-identity">
+                <option value="7">7 (CoreScript)</option>
+                <option value="8" selected>8 (Elevated)</option>
+            </select>
+        </div>
+        <div class="setting">
+            <label>Auto-attach on launch</label>
+            <input id="s-autoattach" type="checkbox" checked>
+        </div>
+        <div class="setting">
+            <label>Poll driver status (ms)</label>
+            <input id="s-pollms" type="number" min="100" step="100" value="500">
+        </div>
+        <div class="setting">
+            <label>Editor theme</label>
+            <select id="s-theme">
+                <option value="vs-dark" selected>vs-dark</option>
+                <option value="hc-black">hc-black</option>
+                <option value="vs">vs (light)</option>
+            </select>
+        </div>
+        <div class="setting">
+            <label>Monaco font size</label>
+            <input id="s-fontsize" type="number" min="8" max="32" value="14">
+        </div>
+        <div class="setting">
+            <label>Workspace path</label>
+            <input id="s-workspace" type="text" readonly>
+            <small>%APPDATA%\krnlexec\workspace</small>
+        </div>
+        <div class="setting">
+            <label>Script Hub JSON catalog URL</label>
+            <input id="s-huburl" type="text" placeholder="https://.../catalog.json">
+        </div>
+        <div class="actions">
+            <button id="s-save" class="primary">Save settings</button>
+            <button id="s-reset" class="ghost">Reset defaults</button>
+        </div>
+        <h3>Driver info</h3>
+        <pre id="s-drvinfo">(not attached)</pre>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

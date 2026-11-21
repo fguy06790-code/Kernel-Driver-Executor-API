@@ -6,33 +6,26 @@
 # "WDM Empty Driver" project in VS 2022). See README.md.
 
 MINGW_CXX := x86_64-w64-mingw32-g++
-CXXFLAGS  := -std=c++17 -O2 -municode -static
+CXXFLAGS  := -std=c++17 -O2 -municode
 
-IMGUI_DIR := vendor/imgui
-IMGUI_SRC := $(IMGUI_DIR)/imgui.cpp \
-             $(IMGUI_DIR)/imgui_draw.cpp \
-             $(IMGUI_DIR)/imgui_tables.cpp \
-             $(IMGUI_DIR)/imgui_widgets.cpp \
-             $(IMGUI_DIR)/imgui_demo.cpp \
-             $(IMGUI_DIR)/backends/imgui_impl_win32.cpp \
-             $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
+WV2_DIR   := vendor/webview2
+WV2_INC   := -I$(WV2_DIR)/include
+WV2_LIB   := -L$(WV2_DIR)/x64 -lWebView2Loader
 
-TE_DIR    := vendor/texteditor
-TE_SRC    := $(TE_DIR)/TextEditor.cpp
-
-GUI_SRC   := gui/main.cpp gui/app.cpp gui/ipc.cpp gui/theme.cpp
-GUI_INC   := -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -I$(TE_DIR) -Igui
-GUI_LIBS  := -lopengl32 -lgdi32 -luser32 -lkernel32 -lshell32 -lshlwapi -lole32 -ldwmapi -limm32
+GUI_SRC   := gui/host.cpp gui/ipc.cpp
+GUI_INC   := $(WV2_INC) -Igui
+GUI_LIBS  := -lole32 -loleaut32 -luuid -lshell32 -lshlwapi -lkernel32 -luser32 -ladvapi32
 
 all: krnlexec.exe krnlexec-gui.exe
 
 krnlexec.exe: loader.cpp
-	$(MINGW_CXX) $(CXXFLAGS) -o $@ $< -lkernel32 -luser32
+	$(MINGW_CXX) $(CXXFLAGS) -static -o $@ $< -lkernel32 -luser32
 
-krnlexec-gui.exe: $(GUI_SRC) $(IMGUI_SRC) $(TE_SRC)
+krnlexec-gui.exe: $(GUI_SRC)
 	$(MINGW_CXX) $(CXXFLAGS) $(GUI_INC) -mwindows \
 	    -DUNICODE -D_UNICODE \
-	    -o $@ $(GUI_SRC) $(IMGUI_SRC) $(TE_SRC) $(GUI_LIBS)
+	    -static-libgcc -static-libstdc++ \
+	    -o $@ $(GUI_SRC) $(WV2_LIB) $(GUI_LIBS)
 
 clean:
 	rm -f krnlexec.exe krnlexec-gui.exe driver.obj KrnlExec.sys

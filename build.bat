@@ -1,5 +1,5 @@
 @echo off
-rem build.bat - KrnlExec driver + loader on Windows (WDK + MSVC).
+rem build.bat - KrnlExec driver + loader + GUI on Windows (WDK + MSVC).
 rem
 rem Open an "x64 Native Tools Command Prompt for VS 2022" with the WDK
 rem environment loaded, then run this.
@@ -20,38 +20,39 @@ set DRIVER_LINK=/subsystem:native /driver /entry:DriverEntry ^
     /nodefaultlib /machine:x64 ^
     ntoskrnl.lib hal.lib
 
-echo [1/2] compiling driver.cpp ...
+echo [1/3] compiling driver.cpp ...
 cl %DRIVER_CL% /c driver.cpp
 if errorlevel 1 exit /b 1
 
 link %DRIVER_LINK% driver.obj /out:KrnlExec.sys
 if errorlevel 1 exit /b 1
 
-echo [2/3] compiling loader.cpp ...
+echo [2/3] compiling CLI loader.cpp ...
 cl %CL_COMMON% /EHsc loader.cpp /Fe:krnlexec.exe
 if errorlevel 1 exit /b 1
 
-echo [3/3] compiling GUI ...
-set GUI_SRC=gui\main.cpp gui\app.cpp gui\ipc.cpp gui\theme.cpp ^
-            vendor\imgui\imgui.cpp ^
-            vendor\imgui\imgui_draw.cpp ^
-            vendor\imgui\imgui_tables.cpp ^
-            vendor\imgui\imgui_widgets.cpp ^
-            vendor\imgui\imgui_demo.cpp ^
-            vendor\imgui\backends\imgui_impl_win32.cpp ^
-            vendor\imgui\backends\imgui_impl_opengl3.cpp ^
-            vendor\texteditor\TextEditor.cpp
-
+echo [3/3] compiling GUI (WebView2) ...
+set GUI_SRC=gui\host.cpp gui\ipc.cpp
 cl %CL_COMMON% /EHsc /DUNICODE /D_UNICODE ^
-   /Ivendor\imgui /Ivendor\imgui\backends /Ivendor\texteditor /Igui ^
+   /Ivendor\webview2\include /Igui ^
    %GUI_SRC% /link /subsystem:windows ^
-   opengl32.lib gdi32.lib user32.lib kernel32.lib shell32.lib ^
-   shlwapi.lib ole32.lib dwmapi.lib imm32.lib ^
+   vendor\webview2\x64\WebView2Loader.dll.lib ^
+   ole32.lib oleaut32.lib uuid.lib shell32.lib shlwapi.lib ^
+   kernel32.lib user32.lib advapi32.lib ^
    /out:krnlexec-gui.exe
 if errorlevel 1 exit /b 1
 
+rem assemble dist/
+if not exist dist mkdir dist
+if not exist dist\web mkdir dist\web
+copy /y KrnlExec.sys dist\ > nul
+copy /y krnlexec.exe dist\ > nul
+copy /y krnlexec-gui.exe dist\ > nul
+copy /y vendor\webview2\x64\WebView2Loader.dll dist\ > nul
+copy /y gui\web\*.* dist\web\ > nul
+
 echo.
-echo build ok:
-dir /b KrnlExec.sys krnlexec.exe krnlexec-gui.exe
+echo build ok. dist/ layout:
+dir /b dist dist\web
 
 endlocal
