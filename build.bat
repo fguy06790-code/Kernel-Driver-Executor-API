@@ -27,12 +27,31 @@ if errorlevel 1 exit /b 1
 link %DRIVER_LINK% driver.obj /out:KrnlExec.sys
 if errorlevel 1 exit /b 1
 
-echo [2/2] compiling loader.cpp ...
+echo [2/3] compiling loader.cpp ...
 cl %CL_COMMON% /EHsc loader.cpp /Fe:krnlexec.exe
+if errorlevel 1 exit /b 1
+
+echo [3/3] compiling GUI ...
+set GUI_SRC=gui\main.cpp gui\app.cpp gui\ipc.cpp gui\theme.cpp ^
+            vendor\imgui\imgui.cpp ^
+            vendor\imgui\imgui_draw.cpp ^
+            vendor\imgui\imgui_tables.cpp ^
+            vendor\imgui\imgui_widgets.cpp ^
+            vendor\imgui\imgui_demo.cpp ^
+            vendor\imgui\backends\imgui_impl_win32.cpp ^
+            vendor\imgui\backends\imgui_impl_opengl3.cpp ^
+            vendor\texteditor\TextEditor.cpp
+
+cl %CL_COMMON% /EHsc /DUNICODE /D_UNICODE ^
+   /Ivendor\imgui /Ivendor\imgui\backends /Ivendor\texteditor /Igui ^
+   %GUI_SRC% /link /subsystem:windows ^
+   opengl32.lib gdi32.lib user32.lib kernel32.lib shell32.lib ^
+   shlwapi.lib ole32.lib dwmapi.lib imm32.lib ^
+   /out:krnlexec-gui.exe
 if errorlevel 1 exit /b 1
 
 echo.
 echo build ok:
-dir /b KrnlExec.sys krnlexec.exe
+dir /b KrnlExec.sys krnlexec.exe krnlexec-gui.exe
 
 endlocal

@@ -12,9 +12,13 @@ model for the Windows sandbox.
 
 - `driver.cpp`   — the WDM kernel driver (one file, ~500 LoC).
 - `loader.cpp`   — user-mode CLI (`krnlexec.exe`) that drives the driver via IOCTLs.
+- `gui/`         — Dear ImGui + Win32 + OpenGL3 desktop frontend (`krnlexec-gui.exe`).
 - `KrnlExec.inf` — install script.
 - `build.bat`    — Windows build (WDK + MSVC).
-- `Makefile`     — cross-build of the loader from Linux via mingw-w64.
+- `Makefile`     — cross-build of the CLI + GUI from Linux via mingw-w64.
+- `dist/`        — prebuilt Windows PE32+ binaries:
+    - `krnlexec.exe`      — CLI loader (~2.4 MB).
+    - `krnlexec-gui.exe`  — GUI (~4.5 MB).
 
 ## Build
 
@@ -31,7 +35,7 @@ build.bat
 
 Produces `KrnlExec.sys` (the driver) and `krnlexec.exe` (the loader).
 
-### Linux (loader only)
+### Linux (user-mode: CLI + GUI)
 
 Cross-compile the user-mode half:
 
@@ -40,9 +44,10 @@ sudo apt install -y mingw-w64
 make
 ```
 
-Produces `krnlexec.exe`. The driver cannot be cross-built from Linux —
-the WDK is Windows-only, and ddk-shim mismatches between clang/mingw and
-the real MSVC toolchain make it a dead end. Build the `.sys` on Windows.
+Produces `krnlexec.exe` (CLI) and `krnlexec-gui.exe` (GUI). The driver
+cannot be cross-built from Linux — the WDK is Windows-only, and
+ddk-shim mismatches between clang/mingw and the real MSVC toolchain
+make it a dead end. Build the `.sys` on Windows.
 
 ## Install
 
@@ -67,6 +72,15 @@ If you don't want to test-sign, manual-map the driver with KDMapper,
 kdu, or an equivalent loader of your choice.
 
 ## Usage
+
+### GUI
+
+Run `krnlexec-gui.exe`. Top-right indicator lights show driver + attach
+state. `Driver → Attach (auto)` locates the Roblox window and attaches.
+`▶ Execute` or `F5` dispatches the active tab's script. Workspace lives
+under `%APPDATA%\krnlexec\workspace`.
+
+### CLI
 
 ```cmd
 krnlexec attach               :: auto-finds the Roblox window
